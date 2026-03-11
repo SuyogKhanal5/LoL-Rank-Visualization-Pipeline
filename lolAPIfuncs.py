@@ -101,7 +101,7 @@ def collect_and_store(summoner_name, tagline="NA1"):
 
     cur = sf_conn.cursor()
     cur.execute("""
-        INSERT INTO SACREDSWORDS15
+        INSERT INTO VisualsTable
             (DATE, PLAYERID, RANK, MASTERY,
              LEVEL, TOTALRANKED, RANKEDWINS, RANKEDWINRATE)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -124,3 +124,9 @@ def create_csv_row(summoner_name, tagline="NA1", region="americas", platform="na
     return f"{date},{summoner_name},{numrank},{mastery},{level},{rankedstats['total']},{rankedstats['wins']},{rankedstats['winrate']}"
 
 collect_and_store("sacredswords15")
+collect_and_store("TFBlade",'122')
+collect_and_store("Solarbacca")
+collect_and_store("Davemon")
+collect_and_store("Annie Bot", 'Tibrs')
+collect_and_store("101100100")
+collect_and_store("FrostPrincess", 'Tiara')
