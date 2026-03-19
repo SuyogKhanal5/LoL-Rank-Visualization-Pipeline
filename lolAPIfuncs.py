@@ -3,15 +3,25 @@ from dotenv import load_dotenv
 import requests
 from datetime import datetime
 import snowflake.connector as sf
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
 load_dotenv()
 
 api_key = os.getenv("RIOT_API_KEY")
 
+with open("rsa_key.p8", "rb") as key_file:
+    private_key = load_pem_private_key(
+        key_file.read(),
+        password=None,
+        backend=default_backend()
+    )
+
 sf_conn = sf.connect(
     user=os.getenv("SNOWFLAKE_USER"),
     password=os.getenv("SNOWFLAKE_PASSWORD"),
     account=os.getenv("SNOWFLAKE_ACCOUNT"),
+    private_key=private_key,
     database="RANKEDDATA",
     schema="LOLSCHEMA"
 )
@@ -101,7 +111,7 @@ def collect_and_store(summoner_name, tagline="NA1"):
 
     cur = sf_conn.cursor()
     cur.execute("""
-        INSERT INTO SACREDSWORDS15
+        INSERT INTO VisualsTable
             (DATE, PLAYERID, RANK, MASTERY,
              LEVEL, TOTALRANKED, RANKEDWINS, RANKEDWINRATE)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
@@ -124,3 +134,9 @@ def create_csv_row(summoner_name, tagline="NA1", region="americas", platform="na
     return f"{date},{summoner_name},{numrank},{mastery},{level},{rankedstats['total']},{rankedstats['wins']},{rankedstats['winrate']}"
 
 collect_and_store("sacredswords15")
+collect_and_store("TFBlade",'122')
+collect_and_store("Solarbacca")
+collect_and_store("Davemon")
+collect_and_store("Annie Bot", 'Tibrs')
+collect_and_store("101100100")
+collect_and_store("FrostPrincess", 'Tiara')
