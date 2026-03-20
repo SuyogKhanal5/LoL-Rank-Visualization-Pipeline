@@ -133,10 +133,23 @@ def create_csv_row(summoner_name, tagline="NA1", region="americas", platform="na
     rankedstats = get_ranked_stats(puuid, platform)
     return f"{date},{summoner_name},{numrank},{mastery},{level},{rankedstats['total']},{rankedstats['wins']},{rankedstats['winrate']}"
 
-collect_and_store("sacredswords15")
-collect_and_store("TFBlade",'122')
-collect_and_store("Solarbacca")
-collect_and_store("Davemon")
-collect_and_store("Annie Bot", 'Tibrs')
-collect_and_store("101100100")
-collect_and_store("FrostPrincess", 'Tiara')
+def add_player(session, playerid, tagline, region, platform):
+    try:
+        existing = session.sql("""
+            SELECT COUNT(*) AS CNT
+            FROM RANKEDDATA.LOLSCHEMA.Players
+            WHERE PLAYERID = ? AND TAGLINE = ?
+        """, params=[playerid, tagline]).collect()
+
+        if existing[0]["CNT"] > 0:
+            return f"SKIPPED {playerid}#{tagline} — Player already exists"
+
+        session.sql("""
+            INSERT INTO RANKEDDATA.LOLSCHEMA.Players (PLAYERID, TAGLINE, REGION, PLATFORM)
+            VALUES (?, ?, ?, ?)
+        """, params=[playerid, tagline, region, platform]).collect()
+
+        return f"OK {playerid}#{tagline} added (region={region}, platform={platform})"
+
+    except Exception as e:
+        return f"ERROR {playerid}#{tagline}: {str(e)}"
